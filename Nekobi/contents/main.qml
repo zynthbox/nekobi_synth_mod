@@ -30,7 +30,7 @@ import QtQuick.Controls 2.2 as QQC2
 import org.kde.kirigami 2.4 as Kirigami
 import org.kde.plasma.core 2.0 as PlasmaCore
 import "." as Here
-import io.zynthbox.ui 1.0 as Zynthian
+import io.zynthbox.ui2 1.0 as Zynthian
 import QtGraphicalEffects 1.15
 
 Item {
@@ -38,10 +38,69 @@ Item {
     property bool debugMode: false
     property int knobSize: 120
 
-    Here.DialControl {
-        anchors.fill: parent
-        controller {
-            symbol: "tunning"
+    property int focusIndex : 0
+    readonly property var focusOrder : [
+        control1,
+        control2,
+        control3,
+        control4,
+        control5,
+        control6,
+        control7]
+
+        Component.onCompleted: focusOrder[focusIndex].forceActiveFocus()
+
+    property var cuiaCallback: function cuiaCallback(cuia) {
+        switch (cuia) {
+            case "SELECT_UP":
+            case "SELECT_DOWN":
+                if(focusIndex === focusOrder.length-1)
+                    focusIndex = 0
+                    else
+                        focusIndex++;
+
+                return true
+            case "NAVIGATE_LEFT":
+            case "NAVIGATE_RIGHT":
+                if(focusIndex === 0)
+                    focusIndex = focusOrder.length-1
+                    else
+                        focusIndex--;
+                return true
+            case "KNOB0_UP":
+                // focusOrder[focusIndex].increaseValue()
+                focusOrder[focusIndex].knobControl.increase()
+                return true
+            case "KNOB0_DOWN":
+                // focusOrder[focusIndex].decreaseValue()
+                focusOrder[focusIndex].knobControl.decrease()
+                return true
+            case "KNOB1_UP":
+            case "KNOB1_DOWN":
+            case "KNOB2_UP":
+            case "KNOB2_DOWN":
+                return true
+            case "KNOB3_UP":
+                if(focusIndex === focusOrder.length-1)
+                    focusIndex = 0
+                    else
+                        focusIndex++;
+
+            focusOrder[focusIndex].forceActiveFocus()
+            return true
+            case "KNOB3_DOWN":
+                if(focusIndex === 0)
+                    focusIndex = focusOrder.length-1
+                    else
+                        focusIndex--;
+
+            focusOrder[focusIndex].forceActiveFocus()
+            return true
+            case "SWITCH_SELECT_SHORT":
+            case "SWITCH_SELECT_BOLD":
+                return true
+            default:
+                return false;
         }
     }
 
@@ -71,6 +130,7 @@ Item {
         }
         contentItem: Item {
             Here.DialControl {
+                id: control1
                 x: 44
                 y: 45
                 width: 45
@@ -78,10 +138,15 @@ Item {
                 controller {
                     symbol: "tuning"
                 }
+
+                onTapped: {
+                    focusIndex = 0
+                    focusOrder[focusIndex].forceActiveFocus()
+                }
             }
 
-
             Here.SwitchControl {
+                id: control2
                 x: 143
                 y: 50
                 width: 19
@@ -93,6 +158,7 @@ Item {
             }
 
             Here.DialControl {
+                id: control3
                 x: 187
                 y: 45
                 height: 45
@@ -103,6 +169,7 @@ Item {
             }
 
             Here.DialControl {
+                id: control4
                 x: 259
                 y: 45
                 height: 45
@@ -113,6 +180,7 @@ Item {
             }
 
             Here.DialControl {
+                id: control5
                 x: 331
                 y: 45
                 height: 45
@@ -124,6 +192,7 @@ Item {
 
 
             Here.DialControl {
+                id: control6
                 x: 403
                 y: 45
                 height: 45
@@ -135,6 +204,7 @@ Item {
 
 
             Here.DialControl {
+                id: control7
                 x: 475
                 y: 45
                 height: 45

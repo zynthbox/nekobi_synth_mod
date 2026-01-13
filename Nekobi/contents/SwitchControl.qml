@@ -27,7 +27,7 @@ import QtQuick 2.15
 import QtQuick.Layouts 1.4
 import QtQuick.Controls 2.15 as QQC2
 import org.kde.kirigami 2.4 as Kirigami
-import io.zynthbox.ui 1.0 as Zynthian
+import io.zynthbox.ui2 1.0 as Zynthian
 import "." as Here
 import QtGraphicalEffects 1.15
 
@@ -43,9 +43,24 @@ Zynthian.AbstractController {
     property color backgroundColor: "#fafafa"
     property color foregroundColor: "#fafafa"
     property color alternativeColor :  "#16171C"
+    property Item knobControl: switchControl
+    signal tapped()
 
-    background: null
+    background: Item {
 
+        TapHandler {
+            onTapped: root.tapped()
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            anchors.margins: -4
+            color: "transparent"
+            border.color: "white"
+            border.width: 2
+            visible: root.activeFocus
+        }
+    }
     padding: 0
     topPadding: 0
     bottomPadding: 0
@@ -74,6 +89,15 @@ Zynthian.AbstractController {
                     y: switchControl.checked ? parent.height-height +10 : -10
                 }
 
+            }
+
+
+            function increase() {
+                root.controller.ctrl.value = root.controller.ctrl.max_value
+            }
+
+            function decrease() {
+                root.controller.ctrl.value = root.controller.ctrl.value0
             }
         }
     }

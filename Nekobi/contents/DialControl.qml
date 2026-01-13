@@ -27,11 +27,11 @@ import QtQuick 2.15
 import QtQuick.Layouts 1.4
 import QtQuick.Controls 2.15 as QQC2
 import org.kde.kirigami 2.4 as Kirigami
-import io.zynthbox.ui 1.0 as Zynthian
+import io.zynthbox.ui2 1.0 as ZUI2
 import "." as Here
 import QtGraphicalEffects 1.15
 
-Zynthian.AbstractController {
+ZUI2.AbstractController {
     id: root
 
     // property alias valueLabel: valueLabel.text
@@ -41,6 +41,8 @@ Zynthian.AbstractController {
     property alias stepSize: dial.stepSize
     property alias snapMode: dial.snapMode
     property alias dial: dial
+    property Item knobControl: dial
+    property bool highlighted : false
 
     implicitWidth: 45
     implicitHeight: 45
@@ -50,7 +52,25 @@ Zynthian.AbstractController {
     property color foregroundColor: "#fafafa"
     property color alternativeColor :  "#16171C"
 
-    background: null
+    signal tapped()
+
+
+    background: Item {
+
+
+        TapHandler {
+            onTapped: root.tapped()
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            anchors.margins: -4
+            color: "transparent"
+            border.color: "white"
+            border.width: 2
+            visible: root.activeFocus
+        }
+    }
 
     padding: 0
     topPadding: 0
