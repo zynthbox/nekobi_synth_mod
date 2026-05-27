@@ -1,4 +1,12 @@
 {
+    "KPlugin": {
+        "Id": "milohr.nekobi",
+        "Name": "Nekobi",
+        "Authors": [{ "Name": "Camilo H." }],
+        "Version": "0.1.0",
+        "License": "GPL-2.0+"
+    },
+    "KPackageStructure": "Zynthbox/Mod",
     "Name": "Nekobi",
     "Engine": "ZBP_SYNTH_00001"
 }
