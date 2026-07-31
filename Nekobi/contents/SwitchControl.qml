@@ -46,6 +46,14 @@ Zynthian.AbstractController {
     property Item knobControl: switchControl
     signal tapped()
 
+    // Current on/off state as a 0..1 fraction (the knob's "seek" target for pick-up).
+    readonly property real seekNormalised: (controller.ctrl && controller.ctrl.value !== controller.ctrl.value0) ? 1 : 0
+    // Fixed pot (Z2_V5B): a 0..1 absolute position toggles the switch at the midpoint.
+    function setValueAbsolute(v) {
+        if (controller.ctrl)
+            controller.ctrl.value = v > 0.5 ? controller.ctrl.max_value : controller.ctrl.value0
+    }
+
     background: Item {
 
         TapHandler {

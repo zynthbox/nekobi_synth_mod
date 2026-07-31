@@ -44,6 +44,18 @@ ZUI2.AbstractController {
     property Item knobControl: dial
     property bool highlighted : false
 
+    // Physical KNOB0 position 0..1 for the pick-up diamond (fixed-pot hardware only); -1 hides it.
+    property real knobPositionNormalised: -1
+    // Current value as a 0..1 fraction (the knob's "seek" target for the pick-up system).
+    readonly property real seekNormalised: (controller.ctrl && controller.ctrl.max_value > controller.ctrl.value0)
+        ? (controller.ctrl.value - controller.ctrl.value0) / (controller.ctrl.max_value - controller.ctrl.value0) : 0
+    // Fixed pot (Z2_V5B): map a 0..1 absolute position onto the parameter's range.
+    function setValueAbsolute(v) {
+        if (controller.ctrl)
+            controller.ctrl.value = controller.ctrl.value0
+                + Math.max(0, Math.min(1, v)) * (controller.ctrl.max_value - controller.ctrl.value0)
+    }
+
     implicitWidth: 45
     implicitHeight: 45
 
@@ -147,6 +159,21 @@ ZUI2.AbstractController {
             target: dial
             property: "value"
             value: root.controller.ctrl ? root.controller.ctrl.value : 0
+        }
+
+        // Pick-up diamond: physical KNOB0 position on the dial arc (fixed-pot hardware only).
+        // QQC2.Dial spans -140°..+140° (default); 0° = up, clockwise positive.
+        Rectangle {
+            visible: root.knobPositionNormalised >= 0
+            width: 9; height: 9; radius: 2; rotation: 45
+            antialiasing: true
+            color: "white"
+            border.color: root.highlightColor; border.width: 2
+            z: 10
+            readonly property real ang: (-140 + root.knobPositionNormalised * 280) * Math.PI / 180
+            readonly property real rad: Math.min(dial.width, dial.height) * 0.4
+            x: dial.width / 2  + rad * Math.sin(ang) - width / 2
+            y: dial.height / 2 - rad * Math.cos(ang) - height / 2
         }
     }
 

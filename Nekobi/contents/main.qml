@@ -40,7 +40,29 @@ Item {
     property int knobSize: 120
     property int focusIndex: 0
     readonly property var focusOrder: [control1, control2, control3, control4, control5, control6, control7]
-    property var cuiaCallback: function cuiaCallback(cuia) {
+
+    // ── Both-encoder support (endless encoders + the Z2_V5B fixed pots) ───────────────
+    // kit_version isn't exposed to QML, so we detect fixed pots by receiving a KNOB*_ABSOLUTE
+    // event (only Z2_V5B sends those). Used only to decide whether to show the pick-up diamond.
+    property bool hasFixedEncoders: false
+    // The Controls page reads a mod's `seekValues` to drive Relative/Jump/Pick-up. seekValues[0] =
+    // the focused control's position (KNOB0's target); knobs 1/2 unused (-1 = Jump). Refresh on
+    // focus change (the CONTROL changing), not on value change.
+    property var seekValues: []
+    onFocusIndexChanged: refreshSeek()
+    function refreshSeek() {
+        var c = focusOrder[focusIndex]
+        var v0 = (c && c.seekNormalised !== undefined) ? c.seekNormalised : undefined
+        root.seekValues = [v0, -1, -1]
+    }
+    // Physical KNOB0 position for the control at focus index `idx` (or -1 to hide its diamond).
+    function knobPosFor(idx) {
+        return (root.focusIndex === idx && root.hasFixedEncoders
+                && zynqtgui.globalKnobs && zynqtgui.globalKnobs.length > 0)
+            ? zynqtgui.globalKnobs[0].valueNormalised : -1
+    }
+
+    property var cuiaCallback: function cuiaCallback(cuia, originId, track, slot, value) {
         switch (cuia) {
         case "SELECT_UP":
         case "SELECT_DOWN":
@@ -63,6 +85,15 @@ Item {
         case "KNOB0_DOWN":
             // focusOrder[focusIndex].decreaseValue()
             focusOrder[focusIndex].knobControl.decrease();
+            return true;
+        // Fixed pot (Z2_V5B): absolute position → mapped onto the focused control's range.
+        case "KNOB0_ABSOLUTE":
+            root.hasFixedEncoders = true;
+            focusOrder[focusIndex].setValueAbsolute(value);
+            return true;
+        case "KNOB1_ABSOLUTE":
+        case "KNOB2_ABSOLUTE":
+            root.hasFixedEncoders = true;
             return true;
         case "KNOB1_UP":
         case "KNOB1_DOWN":
@@ -91,7 +122,7 @@ Item {
         }
     }
 
-    Component.onCompleted: focusOrder[focusIndex].forceActiveFocus()
+    Component.onCompleted: { focusOrder[focusIndex].forceActiveFocus(); refreshSeek() }
 
     Image {
         source: "tail.png"
@@ -133,6 +164,7 @@ Item {
                     focusOrder[focusIndex].forceActiveFocus();
                 }
 
+                knobPositionNormalised: root.knobPosFor(0)
                 controller {
                     symbol: "tuning"
                 }
@@ -160,6 +192,7 @@ Item {
                 height: 45
                 width: 45
 
+                knobPositionNormalised: root.knobPosFor(2)
                 controller {
                     symbol: "cutoff"
                 }
@@ -174,6 +207,7 @@ Item {
                 height: 45
                 width: 45
 
+                knobPositionNormalised: root.knobPosFor(3)
                 controller {
                     symbol: "resonance"
                 }
@@ -188,6 +222,7 @@ Item {
                 height: 45
                 width: 45
 
+                knobPositionNormalised: root.knobPosFor(4)
                 controller {
                     symbol: "env_mod"
                 }
@@ -202,6 +237,7 @@ Item {
                 height: 45
                 width: 45
 
+                knobPositionNormalised: root.knobPosFor(5)
                 controller {
                     symbol: "decay"
                 }
@@ -216,6 +252,7 @@ Item {
                 height: 45
                 width: 45
 
+                knobPositionNormalised: root.knobPosFor(6)
                 controller {
                     symbol: "accent"
                 }
